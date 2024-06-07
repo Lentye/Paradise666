@@ -46,10 +46,10 @@
 /obj/item/gun/projectile/automatic/gyropistol/process_chamber(eject_casing = 0, empty_chamber = 1)
 	..()
 
-/obj/item/gun/projectile/automatic/gyropistol/update_icon()
-	..()
+
+/obj/item/gun/projectile/automatic/gyropistol/update_icon_state()
 	icon_state = "[initial(icon_state)][magazine ? "loaded" : ""]"
-	return
+
 
 /obj/item/gun/projectile/automatic/speargun
 	name = "kinetic speargun"
@@ -67,7 +67,7 @@
 	select = 0
 	actions_types = null
 
-/obj/item/gun/projectile/automatic/speargun/update_icon()
+/obj/item/gun/projectile/automatic/speargun/update_icon_state()
 	return
 
 /obj/item/gun/projectile/automatic/speargun/attack_self()
@@ -136,21 +136,27 @@
 	update_icon()
 	return
 
-/obj/item/gun/projectile/revolver/rocketlauncher/update_icon()
-	cut_overlays()
+
+/obj/item/gun/projectile/revolver/rocketlauncher/update_icon_state()
+	return
+
+
+/obj/item/gun/projectile/revolver/rocketlauncher/update_overlays()
+	. = ..()
 	if(!chambered)
-		add_overlay("[icon_state]_empty")
+		. += "[icon_state]_empty"
+
 
 /obj/item/gun/projectile/revolver/rocketlauncher/suicide_act(mob/user)
 	user.visible_message("<span class='warning'>[user] aims [src] at the ground! It looks like [user.p_theyre()] performing a sick rocket jump!<span>")
-	if(can_shoot())
-		user.notransform = TRUE
+	if(can_shoot(user))
+		ADD_TRAIT(user, TRAIT_NO_TRANSFORM, UNIQUE_TRAIT_SOURCE(src))
 		playsound(src, 'sound/weapons/rocketlaunch.ogg', 80, 1, 5)
 		animate(user, pixel_z = 300, time = 3 SECONDS, easing = LINEAR_EASING)
 		sleep(7 SECONDS)
 		animate(user, pixel_z = 0, time = 0.5 SECONDS, easing = LINEAR_EASING)
 		sleep(0.5 SECONDS)
-		user.notransform = FALSE
+		REMOVE_TRAIT(user, TRAIT_NO_TRANSFORM, UNIQUE_TRAIT_SOURCE(src))
 		process_fire(user, user, TRUE)
 		if(!QDELETED(user)) //if they weren't gibbed by the explosion, take care of them for good.
 			user.gib()

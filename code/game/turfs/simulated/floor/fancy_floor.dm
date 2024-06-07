@@ -10,6 +10,11 @@
 /turf/simulated/floor/wood/broken_states()
 	return list("wood-broken", "wood-broken2", "wood-broken3", "wood-broken4", "wood-broken5", "wood-broken6", "wood-broken7")
 
+/turf/simulated/floor/wood/airless
+	oxygen = 0
+	nitrogen = 0
+	temperature = TCMB
+
 /turf/simulated/floor/wood/screwdriver_act(mob/user, obj/item/I)
 	. = TRUE
 	if(!I.use_tool(src, user, 0, volume = I.tool_volume))
@@ -109,7 +114,7 @@
 	. = ..()
 	update_icon()
 
-/turf/simulated/floor/grass/update_icon()
+/turf/simulated/floor/grass/update_icon_state()
 	icon_state = "grass[pick("1","2","3","4")]"
 
 /turf/simulated/floor/grass/attackby(obj/item/C, mob/user, params)
@@ -121,7 +126,7 @@
 			return FALSE
 
 		if(user.a_intent == INTENT_DISARM)
-			if(do_after(user, 40 * C.toolspeed * gettoolspeedmod(user), target = src))
+			if(do_after(user, 4 SECONDS * C.toolspeed * gettoolspeedmod(user), src))
 				playsound(src, 'sound/effects/shovel_dig.ogg', 50, 1)
 				new /obj/structure/pit(src)
 				return TRUE
@@ -145,17 +150,22 @@
 	clawfootstep = FOOTSTEP_CARPET_BAREFOOT
 	heavyfootstep = FOOTSTEP_GENERIC_HEAVY
 
+/turf/simulated/floor/carpet/airless
+	oxygen = 0
+	nitrogen = 0
+	temperature = TCMB
+
 /turf/simulated/floor/carpet/Initialize(mapload)
 	. = ..()
 	update_icon()
 
+
 /turf/simulated/floor/carpet/broken_states()
 	return list("damaged")
 
-/turf/simulated/floor/carpet/update_icon()
-	if(!..())
-		return
-	dir = 0 //Prevents wrong smoothing
+
+/turf/simulated/floor/carpet/update_icon_state()
+	dir = NONE //Prevents wrong smoothing
 	if(!broken && !burnt)
 		if(smooth)
 			queue_smooth(src)
@@ -237,7 +247,7 @@
 /turf/simulated/floor/fakespace/get_smooth_underlay_icon(mutable_appearance/underlay_appearance, turf/asking_turf, adjacency_dir)
 	underlay_appearance.icon = 'icons/turf/space.dmi'
 	underlay_appearance.icon_state = SPACE_ICON_STATE
-	underlay_appearance.plane = PLANE_SPACE
+	SET_PLANE(underlay_appearance, PLANE_SPACE, src)
 	return TRUE
 
 /turf/simulated/floor/carpet/arcade

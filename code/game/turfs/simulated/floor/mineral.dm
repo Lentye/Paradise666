@@ -17,12 +17,11 @@
 /turf/simulated/floor/mineral/broken_states()
 	return list("[initial(icon_state)]_dam")
 
-/turf/simulated/floor/mineral/update_icon()
-	if(!..())
-		return 0
-	if(!broken && !burnt)
-		if(!(icon_state in icons))
-			icon_state = initial(icon_state)
+
+/turf/simulated/floor/mineral/update_icon_state()
+	if(!broken && !burnt && !(icon_state in icons))
+		icon_state = initial(icon_state)
+
 
 //PLASMA
 /turf/simulated/floor/mineral/plasma
@@ -187,13 +186,13 @@
 
 /turf/simulated/floor/mineral/bananium/lubed/Initialize(mapload)
 	. = ..()
-	MakeSlippery(TURF_WET_LUBE, INFINITY)
+	MakeSlippery(TURF_WET_LUBE, INFINITY, 0, INFINITY, TRUE)
 
 /turf/simulated/floor/mineral/bananium/lubed/pry_tile(obj/item/C, mob/user, silent = FALSE) //I want to get off Mr Honk's Wild Ride
 	if(ishuman(user))
 		var/mob/living/carbon/human/H = user
 		to_chat(H, span_warning("You lose your footing trying to pry off the tile!"))
-		H.slip("the floor", 10 SECONDS, tilesSlipped = 4, walkSafely = 0, slipAny = 1)
+		H.slip(10 SECONDS, src, TURF_WET_LUBE, tilesSlipped = 4)
 	return
 
 //TRANQUILLITE
