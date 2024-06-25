@@ -46,8 +46,9 @@ Difficulty: Medium
 	var/charging = FALSE
 	var/firing_laser = FALSE
 	internal_type = /obj/item/gps/internal/legion
-	medal_type = BOSS_MEDAL_LEGION
-	score_type = LEGION_SCORE
+	achievement_type = /datum/award/achievement/boss/legion_kill
+	score_achievement_type = /datum/award/score/legion_score
+	crusher_achievement_type = /datum/award/achievement/boss/legion_crusher
 	loot = list(/obj/item/storm_staff)
 	crusher_loot = list(/obj/item/storm_staff, /obj/item/crusher_trophy/empowered_legion_skull)
 	enraged_loot = /obj/item/disk/fauna_research/legion

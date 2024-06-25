@@ -45,9 +45,7 @@ CREATE TABLE `characters` (
   `alt_head_name` varchar(45) COLLATE utf8mb4_unicode_ci NOT NULL,
   `eye_colour` varchar(7) COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT '#000000',
   `underwear` longtext COLLATE utf8mb4_unicode_ci NOT NULL,
-  `underwear_color` varchar(7) COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT '#ffffff',
   `undershirt` longtext COLLATE utf8mb4_unicode_ci NOT NULL,
-  `undershirt_color` varchar(7) COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT '#ffffff',
   `backbag` longtext COLLATE utf8mb4_unicode_ci DEFAULT NULL,
   `b_type` varchar(45) COLLATE utf8mb4_unicode_ci NOT NULL,
   `alternate_option` smallint(4) NOT NULL,
@@ -67,7 +65,6 @@ CREATE TABLE `characters` (
   `med_record` longtext COLLATE utf8mb4_unicode_ci NOT NULL,
   `sec_record` longtext COLLATE utf8mb4_unicode_ci NOT NULL,
   `gen_record` longtext COLLATE utf8mb4_unicode_ci NOT NULL,
-  `exploit_record` longtext COLLATE utf8mb4_unicode_ci DEFAULT NULL,
   `disabilities` mediumint(8) NOT NULL,
   `player_alt_titles` longtext COLLATE utf8mb4_unicode_ci NOT NULL,
   `organ_data` longtext COLLATE utf8mb4_unicode_ci NOT NULL,
@@ -78,13 +75,6 @@ CREATE TABLE `characters` (
   `body_accessory` longtext COLLATE utf8mb4_unicode_ci NOT NULL,
   `gear` longtext COLLATE utf8mb4_unicode_ci NOT NULL,
   `autohiss` tinyint(1) NOT NULL,
-  `uplink_pref` longtext COLLATE utf8mb4_unicode_ci DEFAULT NULL,
-  `tts_seed` varchar(32) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
-  `hair_gradient` varchar(45) COLLATE utf8mb4_unicode_ci NOT NULL,
-  `hair_gradient_offset` varchar(7) COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT '0,0',
-  `hair_gradient_colour` varchar(7) COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT '#000000',
-  `hair_gradient_alpha` tinyint(3) UNSIGNED NOT NULL DEFAULT '200',
-  `custom_emotes` longtext COLLATE 'utf8mb4_unicode_ci' DEFAULT NULL,
   PRIMARY KEY (`id`),
   KEY `ckey` (`ckey`)
 ) ENGINE=InnoDB AUTO_INCREMENT=125467 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
@@ -274,9 +264,9 @@ CREATE TABLE `player` (
   `be_role` longtext COLLATE utf8mb4_unicode_ci DEFAULT NULL,
   `default_slot` smallint(4) DEFAULT '1',
   `toggles` int(11) DEFAULT NULL,
-  `toggles_2` int(11) DEFAULT NULL,
+  `toggles_2` int(11) DEFAULT '0',
   `sound` mediumint(8) DEFAULT '31',
-  `volume_mixer` longtext COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `volume` smallint(4) DEFAULT '100',
   `lastchangelog` varchar(32) COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT '0',
   `exp` longtext COLLATE utf8mb4_unicode_ci DEFAULT NULL,
   `clientfps` smallint(4) DEFAULT '0',
@@ -287,9 +277,6 @@ CREATE TABLE `player` (
   `byond_date` DATE DEFAULT NULL,
   `discord_id` varchar(32) NULL DEFAULT NULL,
   `discord_name` varchar(32) NULL DEFAULT NULL,
-  `keybindings` longtext COLLATE 'utf8mb4_unicode_ci' DEFAULT NULL,
-  `viewrange` VARCHAR(5) NOT NULL DEFAULT '17x15' COLLATE 'utf8mb4_general_ci',
-  `ghost_darkness_level` tinyint(1) UNSIGNED NOT NULL DEFAULT '255',
   PRIMARY KEY (`id`),
   UNIQUE KEY `ckey` (`ckey`),
   KEY `lastseen` (`lastseen`),
@@ -299,6 +286,28 @@ CREATE TABLE `player` (
   KEY `fupdate` (`fupdate`)
 ) ENGINE=InnoDB AUTO_INCREMENT=135298 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Table structure for table `achievements`
+--
+DROP TABLE IF EXISTS `achievements`;
+CREATE TABLE `achievements` (
+	`ckey` VARCHAR(32) NOT NULL,
+	`achievement_key` VARCHAR(32) NOT NULL,
+	`value` INT NULL,
+	`last_updated` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+	PRIMARY KEY (`ckey`,`achievement_key`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+DROP TABLE IF EXISTS `achievement_metadata`;
+CREATE TABLE `achievement_metadata` (
+	`achievement_key` VARCHAR(32) NOT NULL,
+	`achievement_version` SMALLINT UNSIGNED NOT NULL DEFAULT 0,
+	`achievement_type` enum('achievement','score','award') NULL DEFAULT NULL,
+	`achievement_name` VARCHAR(64) NULL DEFAULT NULL,
+	`achievement_description` VARCHAR(512) NULL DEFAULT NULL,
+	PRIMARY KEY (`achievement_key`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
 --
 -- Table structure for table `privacy`

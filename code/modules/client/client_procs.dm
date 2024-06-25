@@ -365,6 +365,11 @@
 	connection_realtime = world.realtime
 	connection_timeofday = world.timeofday
 	log_client_to_db(tdata)
+	if(GLOB.achievement_data[ckey])
+		achievements = GLOB.achievement_data[ckey]
+	else
+		achievements = new(ckey)
+		GLOB.achievement_data[ckey] = achievements
 	. = ..()	//calls mob.Login()
 
 
@@ -1447,6 +1452,12 @@
 /client/proc/maxview()
 	var/list/screensize = getviewsize(view)
 	return round(max(screensize[1], screensize[2]) / 2)
+
+/client/proc/give_award(achievement_type, mob/user, value = 1)
+	return achievements.unlock(achievement_type, user, value)
+
+/client/proc/get_award_status(achievement_type, mob/user, value = 1)
+	return achievements.get_achievement_status(achievement_type)
 
 
 #undef LIMITER_SIZE

@@ -64,6 +64,8 @@
 	 */
 	var/list/screen_maps = list()
 
+	var/datum/achievement_data/achievements
+
 	var/atom/movable/screen/click_catcher/void
 
 	var/karma = 0
