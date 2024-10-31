@@ -6,7 +6,7 @@ export const ERTManager = (props, context) => {
   const { act, data } = useBackend(context);
   let slotOptions = [0, 1, 2, 3, 4, 5];
   return (
-    <Window width={350} height={430}>
+    <Window width={350} height={470}>
       <Window.Content>
         <Section title="Overview">
           <LabeledList>
@@ -31,6 +31,34 @@ export const ERTManager = (props, context) => {
                 content="Gamma"
                 color={data.ert_type === 'Gamma' ? 'purple' : ''}
                 onClick={() => act('ert_type', { ert_type: 'Gamma' })}
+              />
+            </LabeledList.Item>
+            <LabeledList.Item label="Manual Сheck">
+              <Button
+                key={"manual_check"}
+                selected={data.manual_check !== data.manual_check}
+                content={'Allow manual selection?'}
+                tooltip={"Возможность отобрать игроков группы в ручную, \
+                если количество добровольцев больше количества слотов(иначе разницы нет)"}
+                tooltipPosition="bottom"
+                onClick={() => act('manual_check')}
+                color={data.manual_check === 1
+                  ? "green"
+                  : ""}
+              />
+            </LabeledList.Item>
+            <LabeledList.Item label="Prevent Announce">
+              <Button
+                  key={"prevent_announce"}
+                  selected={data.manual_check !== data.manual_check}
+                  content={'Prevent announce?'}
+                  tooltip={"Возможность отключить автоматическое оповещение о сборе и отправке отряда, \
+                  повышает шанс отсутствия ловушки у порта прибытия и подготовки к противостоянию с ОБР"}
+                  tooltipPosition="bottom"
+                  onClick={() => act('prevent_announce')}
+                  color={data.prevent_announce === 1
+                    ? "red"
+                    : ""}
               />
             </LabeledList.Item>
           </LabeledList>

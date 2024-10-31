@@ -8,6 +8,8 @@
 	var/janitor_slots = 0
 	var/paranormal_slots = 0
 	var/cyborg_slots = 0
+	var/manual_check = 0
+	var/prevent_announce = 0
 
 /datum/ui_module/ert_manager/ui_state(mob/user)
 	return GLOB.admin_state
@@ -39,6 +41,8 @@
 	data["jan"] = janitor_slots
 	data["par"] = paranormal_slots
 	data["cyb"] = cyborg_slots
+	data["manual_check"] = manual_check
+	data["prevent_announce"] = prevent_announce
 	data["total"] = commander_slots + security_slots + medical_slots + engineering_slots + janitor_slots + paranormal_slots + cyborg_slots
 	data["spawnpoints"] = GLOB.emergencyresponseteamspawn.len
 	return data
@@ -64,6 +68,10 @@
 			paranormal_slots = text2num(params["set_par"])
 		if("set_cyb")
 			cyborg_slots = text2num(params["set_cyb"])
+		if("manual_check")
+			manual_check = !manual_check
+		if("prevent_announce")
+			prevent_announce = !prevent_announce
 		if("dispatch_ert")
 			var/datum/response_team/D
 			switch(ert_type)
@@ -96,8 +104,9 @@
 			notify_ghosts("An ERT is being dispatched. Open positions: [slot_text]")
 			message_admins("[key_name_admin(usr)] dispatched a [ert_type] ERT. Slots: [slot_text]")
 			log_admin("[key_name(usr)] dispatched a [ert_type] ERT. Slots: [slot_text]")
-			GLOB.event_announcement.Announce("Внимание, [station_name()]. Мы предпринимаем шаги для отправки отряда быстрого реагирования. Ожидайте.", "ВНИМАНИЕ: Активирован протокол ОБР.")
-			trigger_armed_response_team(D, commander_slots, security_slots, medical_slots, engineering_slots, janitor_slots, paranormal_slots, cyborg_slots)
+			if(!prevent_announce)
+				GLOB.event_announcement.Announce("Внимание, [station_name()]. Мы предпринимаем шаги для отправки отряда быстрого реагирования. Ожидайте.", "ВНИМАНИЕ: Активирован протокол ОБР.")
+			trigger_armed_response_team(D, commander_slots, security_slots, medical_slots, engineering_slots, janitor_slots, paranormal_slots, cyborg_slots, manual_check, prevent_announce)
 		else
 			return FALSE
 

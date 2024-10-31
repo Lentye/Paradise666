@@ -620,7 +620,6 @@
 				if(A.locked)
 					A.unlock()
 
-<<<<<<< HEAD
 /obj/docking_port/mobile/proc/roadkill(list/L0, list/L1, dir)
 	var/list/hurt_mobs = list()
 	for(var/i in 1 to L0.len)
@@ -659,8 +658,6 @@
 			else
 				if(AM.simulated) // Don't qdel lighting overlays, they are static
 					qdel(AM)
-=======
->>>>>>> 90f778164126d1a345c248ca535998f23e036d52
 
 //used by shuttle subsystem to check timers
 /obj/docking_port/mobile/proc/check()

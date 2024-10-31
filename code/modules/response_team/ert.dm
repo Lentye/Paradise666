@@ -62,48 +62,75 @@ GLOBAL_VAR_INIT(ert_request_answered, FALSE)
 
 	return 1
 
-/proc/trigger_armed_response_team(datum/response_team/response_team_type, commander_slots, security_slots, medical_slots, engineering_slots, janitor_slots, paranormal_slots, cyborg_slots)
+/proc/trigger_armed_response_team(datum/response_team/response_team_type, commander_slots, security_slots, medical_slots, engineering_slots, janitor_slots, paranormal_slots, cyborg_slots, manual_check, prevent_announce)
 	GLOB.response_team_members = list()
 	GLOB.active_team = response_team_type
 	GLOB.active_team.setSlots(commander_slots, security_slots, medical_slots, engineering_slots, janitor_slots, paranormal_slots, cyborg_slots)
+	var/total_slots = commander_slots + security_slots + medical_slots + engineering_slots + janitor_slots + paranormal_slots + cyborg_slots
 
 	GLOB.send_emergency_team = TRUE
-	var/list/ert_candidates = shuffle(SSghost_spawns.poll_candidates("Join the Emergency Response Team?",, GLOB.responseteam_age, 60 SECONDS, TRUE, GLOB.role_playtime_requirements[ROLE_ERT]))
-	if(!ert_candidates.len)
-		GLOB.active_team.cannot_send_team()
+	var/list/volunteers = shuffle(SSghost_spawns.poll_candidates("Join the Emergency Response Team?", GLOB.responseteam_age, 60 SECONDS, TRUE, GLOB.role_playtime_requirements[ROLE_ERT]))
+	var/list/ert_candidates = list()
+	if(!volunteers.len)
+		if(!prevent_announce)
+			GLOB.active_team.cannot_send_team()
 		GLOB.send_emergency_team = FALSE
 		return
 
 	// Respawnable players get first dibs
-	for(var/mob/dead/observer/M in ert_candidates)
+	for(var/mob/dead/observer/M in volunteers)
 		if(jobban_isbanned(M, ROLE_TRAITOR) || jobban_isbanned(M, JOB_TITLE_OFFICER) || jobban_isbanned(M, JOB_TITLE_CAPTAIN) || jobban_isbanned(M, JOB_TITLE_CYBORG))
 			continue
 		if((M in GLOB.respawnable_list) && M.JoinResponseTeam())
-			GLOB.response_team_members |= M
+			ert_candidates|= M
 	// If there's still open slots, non-respawnable players can fill them
-	for(var/mob/dead/observer/M in (ert_candidates - GLOB.respawnable_list))
+	for(var/mob/dead/observer/M in (volunteers - GLOB.respawnable_list))
 		if(M.JoinResponseTeam())
-			GLOB.response_team_members |= M
+			ert_candidates|= M
 
-	if(!GLOB.response_team_members.len)
-		GLOB.active_team.cannot_send_team()
+	if(!ert_candidates.len)
+		if(!prevent_announce)
+			GLOB.active_team.cannot_send_team()
 		GLOB.send_emergency_team = FALSE
 		return
+
+	if(manual_check && ert_candidates.len > total_slots)
+		var/filter[ert_candidates.len]
+		var/ghost_ckey
+		var/ghost_hours_noghosttime
+		var/i = 0
+		for(i = 1, i<=ert_candidates.len, i++)
+			var/mob/dead/observer/volunteer = ert_candidates[i]
+			ghost_ckey = volunteer.ckey
+			ghost_hours_noghosttime = (volunteer.client).get_exp_type(EXP_TYPE_CREW)
+			filter[i] = "[ghost_ckey]|[ghost_hours_noghosttime]" //byond dont allow to get account with | symbol,so no problem with it
+		var/ghost_after_list[ert_candidates.len]
+		for(var/i2 = total_slots, (i2 > 0 && filter.len), i2--)
+			var/this_ghost = input("Pick players. This will go on until there either no more ghosts to pick from or the [i2] remaining slot(s) are full.", "Candidates") as null|anything in filter
+			filter -= this_ghost
+			var/n1 = findtext(this_ghost, "|") // position number for "secret" | separator symbol to start cutting hours numbers from ckey at this_ghost
+			this_ghost = splicetext(this_ghost, n1, 0) //cutting | and hours numbers from ckey
+			ghost_after_list[i2] = this_ghost
+		for(var/mob/dead/observer/G in ert_candidates)
+			if(G.ckey in ghost_after_list)
+				GLOB.response_team_members |= G
+	else
+		GLOB.response_team_members |= ert_candidates
 
 	var/list/ert_gender_prefs = list()
 	for(var/mob/M in GLOB.response_team_members)
 		ert_gender_prefs.Add(input_async(M, "Please select a gender (10 seconds):", list("Male", "Female")))
-	addtimer(CALLBACK(GLOBAL_PROC, /proc/get_ert_role_prefs, GLOB.response_team_members, ert_gender_prefs), 100)
+	addtimer(CALLBACK(GLOBAL_PROC, /proc/get_ert_role_prefs, GLOB.response_team_members, ert_gender_prefs, prevent_announce), 100)
 
-/proc/get_ert_role_prefs(list/response_team_members, list/ert_gender_prefs) // Why the FUCK is this variable the EXACT SAME as the global one
+/proc/get_ert_role_prefs(list/response_team_members, list/ert_gender_prefs, prevent_announce) // Why the FUCK is this variable the EXACT SAME as the global one
 	var/list/ert_role_prefs = list()
 	for(var/datum/async_input/A in ert_gender_prefs)
 		A.close()
 	for(var/mob/M in response_team_members)
 		ert_role_prefs.Add(input_ranked_async(M, "Please order ERT roles from most to least preferred (20 seconds):", GLOB.active_team.get_slot_list()))
-	addtimer(CALLBACK(GLOBAL_PROC, /proc/dispatch_response_team, response_team_members, ert_gender_prefs, ert_role_prefs), 200)
+	addtimer(CALLBACK(GLOBAL_PROC, /proc/dispatch_response_team, response_team_members, ert_gender_prefs, ert_role_prefs, prevent_announce), 200)
 
-/proc/dispatch_response_team(list/response_team_members, list/datum/async_input/ert_gender_prefs, list/datum/async_input/ert_role_prefs)
+/proc/dispatch_response_team(list/response_team_members, list/datum/async_input/ert_gender_prefs, list/datum/async_input/ert_role_prefs, prevent_announce)
 	var/spawn_index = 1
 
 	for(var/i = 1, i <= response_team_members.len, i++)
@@ -134,10 +161,12 @@ GLOBAL_VAR_INIT(ert_request_answered, FALSE)
 	GLOB.send_emergency_team = FALSE
 
 	if(GLOB.active_team.count)
-		GLOB.active_team.announce_team()
+		if(!prevent_announce)
+			GLOB.active_team.announce_team()
 		return
 	// Everyone who said yes was afk
-	GLOB.active_team.cannot_send_team()
+	if(!prevent_announce)
+		GLOB.active_team.cannot_send_team()
 
 /client/proc/create_response_team(new_gender, role, turf/spawn_location)
 	if(role == JOB_TITLE_CYBORG)
